@@ -1,7 +1,10 @@
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fbase/components/my_card.dart';
 import 'package:fbase/components/my_textfield.dart';
 import 'package:fbase/pages/login.dart';
+import 'package:fbase/pages/newpost_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -35,11 +38,18 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        bottomNavigationBar: NavigationBar(destinations: const [
-          Icon(Icons.home),
-          Icon(Icons.bookmark),
-          Icon(Icons.post_add_sharp),
-          Icon(Icons.person)
+        bottomNavigationBar: NavigationBar(destinations: [
+          const Icon(Icons.home),
+          const Icon(Icons.bookmark),
+          IconButton(
+              icon: const Icon(Icons.post_add_sharp),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const NewPost()),
+                );
+              }),
+          const Icon(Icons.person)
         ]),
         appBar: AppBar(
           centerTitle: true,
@@ -55,7 +65,8 @@ class _HomePageState extends State<HomePage> {
         ),
         body: StreamBuilder<QuerySnapshot>(
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+            if (snapshot.connectionState == ConnectionState.waiting ||
+                snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasData) {
               // print(snapshot.data!.docs[0]['name']);
@@ -92,14 +103,18 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(15),
+                    padding: EdgeInsets.all(15),
                     child: Row(
                       children: [
-                        const Expanded(flex: 2, child: SearchBar()),
+                        const Expanded(
+                            flex: 2,
+                            child: SearchBar(
+                              hintText: 'Search by name',
+                            )),
                         Expanded(
                             flex: 1,
                             child: Card(
-                              elevation: 6.0,
+                              elevation: 4,
                               clipBehavior: Clip.hardEdge,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20.0),
@@ -119,14 +134,111 @@ class _HomePageState extends State<HomePage> {
                         // print(snapshot.data!.docs[index]['createdAt'] as DateTime);
                         // print(now);
                         return Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: MyPostCard(
-                            title: snapshot.data!.docs[index]['Title'],
-                            name: snapshot.data!.docs[index]['uploader'],
-                            description: snapshot.data!.docs[index]['description'],
-                            pfp:
-                                snapshot.data!.docs[index]['image'],
-                            elapsedTime: "${now.difference(snapshot.data!.docs[index]['createdAt'].toDate()).inHours}h",
+                          padding: const EdgeInsets.all(8.0),
+                          child: InkWell(
+                            onTap: () {
+                              // print(FirebaseAuth.instance.currentUser!.email);
+                              // print(snapshot.data!.docs[index]['email']);
+                              if (FirebaseAuth.instance.currentUser!.email ==
+                                  snapshot.data!.docs[index]['email']) {
+                                final TextEditingController name =
+                                    TextEditingController();
+                                final TextEditingController title =
+                                    TextEditingController();
+                                final TextEditingController description =
+                                    TextEditingController();
+                                showModalBottomSheet(
+                                  scrollControlDisabledMaxHeightRatio: 0.8,
+                                  context: context,
+                                  builder: (context) {
+                                    return Column(
+                                      children: [
+                                        const SizedBox(height: 30),
+                                        MyTextField(
+                                            controller: name,
+                                            hintText: 'Name',
+                                            hide: false),
+                                        MyTextField(
+                                            controller: title,
+                                            hintText: 'Title',
+                                            hide: false),
+                                        MyTextField(
+                                            controller: description,
+                                            hintText: 'Description',
+                                            hide: false),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            final String id =
+                                                snapshot.data!.docs[index].id;
+                                            final docRef = FirebaseFirestore
+                                                .instance
+                                                .collection("posts")
+                                                .doc(id);
+                                            final update = {
+                                              "Title": title.text,
+                                              "description": description.text,
+                                              "uploader": name.text
+                                            };
+                                            try {
+                                              docRef.update(update);
+                                              print(
+                                                  "data updated successfully");
+                                              Navigator.pop(context);
+                                            } catch (e) {
+                                              print("Error updating: $e");
+                                            }
+                                          },
+                                          style: ButtonStyle(
+                                              shape:
+                                                  const MaterialStatePropertyAll(
+                                                RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.all(
+                                                    Radius.circular(5),
+                                                  ),
+                                                ),
+                                              ),
+                                              backgroundColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      const Color.fromARGB(
+                                                          255, 109, 70, 109))),
+                                          child: const Text(
+                                            'Edit Post',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        )
+                                      ],
+                                    );
+                                  },
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      backgroundColor: Colors.red,
+                                      content: Center(
+                                        child: Text(
+                                            'You can only edit your own posts'),
+                                      ),
+                                      duration: Duration(seconds: 4)),
+                                );
+                              }
+                            },
+                            child: MyPostCard(
+                              title: snapshot.data!.docs[index]['Title'],
+                              name: snapshot.data!.docs[index]['uploader'],
+                              description: snapshot.data!.docs[index]
+                                  ['description'],
+                              pfp: snapshot.data!.docs[index]['image'],
+                              elapsedTime: Helper.timeAgo(
+                                  ((snapshot.data!.docs[index]['createdAt'] !=
+                                              null)
+                                          ? (snapshot.data!.docs[index]
+                                              ['createdAt'] as Timestamp)
+                                          : Timestamp.now())
+                                      .toDate())!,
+                            ),
                           ),
                         );
                       },
@@ -138,12 +250,44 @@ class _HomePageState extends State<HomePage> {
             } else {
               return Center(
                   child: Card(
-                      child: Text('Couldnt fetch data because ${snapshot}')));
+                      child: Text('Couldnt fetch data because $snapshot')));
             }
           },
-          stream: FirebaseFirestore.instance.collection("posts").snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection("posts")
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
         ),
       ),
     );
+  }
+}
+
+class Helper {
+  static String? timeAgo(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inSeconds < 0) return "just now";
+
+    final seconds = difference.inSeconds;
+    if (seconds < 60) {
+      return '${seconds}s';
+    }
+
+    final minutes = difference.inMinutes;
+    if (minutes < 60) {
+      return '${minutes}m';
+    }
+
+    final hours = difference.inHours;
+    if (hours < 24) {
+      return '${hours}h';
+    }
+
+    final days = difference.inDays;
+    if (days < 7) {
+      return '${days}d';
+    }
   }
 }

@@ -17,6 +17,10 @@ class MyPostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      elevation: 4,
       child: Column(children: [
         Row(
           children: [
@@ -29,7 +33,10 @@ class MyPostCard extends StatelessWidget {
                       backgroundImage: NetworkImage(pfp),
                     ),
                   ),
-                  Text(name)
+                  Text(
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                  )
                 ],
               ),
             ),
@@ -42,9 +49,10 @@ class MyPostCard extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12),
             child: Text(
-              title,style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              title,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -52,7 +60,7 @@ class MyPostCard extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12),
             child: Text(
               description,
               overflow: TextOverflow.ellipsis,
