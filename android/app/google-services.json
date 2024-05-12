@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "988031879760",
+    "firebase_url": "https://assignment3-b7033-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "assignment3-b7033",
+    "storage_bucket": "assignment3-b7033.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988031879760:android:eb7d4be40ca79718ec9f55",
+        "android_client_info": {
+          "package_name": "com.example.fbase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPd9un6-fEq_JGVnPdPWztzU4WFnlRFSA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
