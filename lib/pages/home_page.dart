@@ -58,6 +58,7 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasData) {
+              // print(snapshot.data!.docs[0]['name']);
               return Column(
                 children: [
                   Align(
@@ -114,15 +115,18 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: ListView.builder(
                       itemBuilder: (context, index) {
-                        return const Padding(
+                        final DateTime now = DateTime.now();
+                        // print(snapshot.data!.docs[index]['createdAt'] as DateTime);
+                        // print(now);
+                        return Padding(
                           padding: EdgeInsets.all(8.0),
                           child: MyPostCard(
-                            title: "Mockdata",
-                            name: "Mockdame",
-                            description: "This is some mock data",
+                            title: snapshot.data!.docs[index]['Title'],
+                            name: snapshot.data!.docs[index]['uploader'],
+                            description: snapshot.data!.docs[index]['description'],
                             pfp:
-                                "https://media.istockphoto.com/id/1468192804/photo/concept-of-generating-photo-realistic-image-by-ai-software.jpg?s=2048x2048&w=is&k=20&c=jXS96ktRzIYINHe71XAG1nKqf9BBj965BjDM4-pArYY=",
-                            elapsedTime: '9h',
+                                snapshot.data!.docs[index]['image'],
+                            elapsedTime: "${now.difference(snapshot.data!.docs[index]['createdAt'].toDate()).inHours}h",
                           ),
                         );
                       },
